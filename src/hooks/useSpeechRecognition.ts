@@ -60,8 +60,35 @@ export const useSpeechRecognition = () => {
     setIsListening(false);
   }, []);
 
-  const startListening = useCallback((onSpeechEnd?: (text: string) => void) => {
+  const checkMicrophonePermission = async (): Promise<boolean> => {
+    try {
+      // Modern browsers - check permissions API
+      if ('permissions' in navigator) {
+        const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        if (permission.state === 'denied') {
+          return false;
+        }
+      }
+
+      // Try to get user media to test microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (error) {
+      console.error('Mikrofon izni kontrolü hatası:', error);
+      return false;
+    }
+  };
+
+  const startListening = useCallback(async (onSpeechEnd?: (text: string) => void) => {
     if (!isSupported) return;
+
+    // Check microphone permission first
+    const hasPermission = await checkMicrophonePermission();
+    if (!hasPermission) {
+      alert('Mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından mikrofon iznini verin ve sayfayı yenileyin.');
+      return;
+    }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
@@ -145,6 +172,9 @@ export const useSpeechRecognition = () => {
       // Handle different error types appropriately
       if (event.error === 'aborted') {
         console.log('ℹ️ Speech recognition was aborted (normal operation)');
+      } else if (event.error === 'not-allowed') {
+        console.error('❌ Microphone permission denied');
+        alert('Mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından mikrofon iznini verin ve sayfayı yenileyin.');
       } else {
         console.error('❌ Speech recognition error:', event.error);
       }
