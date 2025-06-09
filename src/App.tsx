@@ -313,7 +313,7 @@ function App() {
         </div>
 
         {/* Voice Mode Content */}
-        <div className="flex-1 flex flex-col items-center justify-center p-8">
+        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
           {/* Close Button */}
           <div className="absolute top-24 right-4 sm:right-8">
             <button
@@ -326,14 +326,17 @@ function App() {
           </div>
 
           {/* Visual Feedback */}
-          <div className="text-center">
+          <div className="text-center flex flex-col items-center">
             {isListening && (
-              <div className="mb-6">
-                <img 
-                  src="/dinle.gif" 
-                  alt="Dinleniyor" 
-                  className="w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 mx-auto rounded-full shadow-2xl"
-                />
+              <div className="mb-6 flex flex-col items-center">
+                <div className="relative">
+                  <img 
+                    src="/dinle.gif" 
+                    alt="Dinleniyor" 
+                    className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 object-cover rounded-full shadow-2xl border-4 border-green-200"
+                  />
+                  <div className="absolute inset-0 rounded-full bg-green-500/20 animate-pulse"></div>
+                </div>
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-700 mt-6">
                   🎤 Dinleniyor...
                 </p>
@@ -349,12 +352,15 @@ function App() {
             )}
             
             {isSpeaking && (
-              <div className="mb-6">
-                <img 
-                  src="/konus.gif" 
-                  alt="Konuşuyor" 
-                  className="w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 mx-auto rounded-full shadow-2xl"
-                />
+              <div className="mb-6 flex flex-col items-center">
+                <div className="relative">
+                  <img 
+                    src="/konus.gif" 
+                    alt="Konuşuyor" 
+                    className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 object-cover rounded-full shadow-2xl border-4 border-blue-200"
+                  />
+                  <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-pulse"></div>
+                </div>
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-700 mt-6">
                   🔊 Konuşuyor...
                 </p>
@@ -365,9 +371,9 @@ function App() {
             )}
             
             {!isListening && !isSpeaking && !isLoading && (
-              <div className="mb-6">
-                <div className="w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 mx-auto rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-2xl">
-                  <Mic className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-gray-400" />
+              <div className="mb-6 flex flex-col items-center">
+                <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-2xl border-4 border-gray-200">
+                  <Mic className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-gray-400" />
                 </div>
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-600 mt-6">
                   ⏳ Hazır...
@@ -379,12 +385,12 @@ function App() {
             )}
 
             {isLoading && (
-              <div className="mb-6">
-                <div className="w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 mx-auto rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-2xl">
-                  <div className="flex space-x-3">
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce"></div>
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce delay-150"></div>
-                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce delay-300"></div>
+              <div className="mb-6 flex flex-col items-center">
+                <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-2xl border-4 border-blue-200">
+                  <div className="flex space-x-2">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded-full animate-bounce"></div>
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded-full animate-bounce delay-150"></div>
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded-full animate-bounce delay-300"></div>
                   </div>
                 </div>
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mt-6">
@@ -398,8 +404,8 @@ function App() {
           </div>
 
           {/* Instructions */}
-          <div className="mt-8 text-center max-w-2xl">
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+          <div className="mt-8 text-center max-w-2xl px-4">
+            <div className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg">
               <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">
                 Sesli Konuşma Modu Aktif
               </h3>
