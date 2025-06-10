@@ -322,12 +322,12 @@ function App() {
             alt="Header"
           />
           <div 
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute inset-0 flex items-center justify-center px-2"
             style={{
               background: 'linear-gradient(to bottom, rgba(0, 51, 102, 0.85), rgba(0, 102, 204, 0.75))'
             }}
           >
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg tracking-wider">
+            <h1 className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white drop-shadow-lg tracking-wider text-center leading-tight">
               TURGUT ÖZAL KIZ ANADOLU İMAM HATİP LİSESİ
             </h1>
           </div>
@@ -440,17 +440,17 @@ function App() {
       {/* Header */}
       <div className="w-full relative h-[10vh] min-h-[80px] max-h-[100px]">
         <img
-          src="/header.jpg"
+          src="/public/header.jpg"
           className="w-full h-full object-cover"
           alt="Header"
         />
         <div 
-          className="absolute inset-0 flex items-center justify-center"
+          className="absolute inset-0 flex items-center justify-center px-2"
           style={{
             background: 'linear-gradient(to bottom, rgba(0, 51, 102, 0.85), rgba(0, 102, 204, 0.75))'
           }}
         >
-          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg tracking-wider">
+          <h1 className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white drop-shadow-lg tracking-wider text-center leading-tight">
             TURGUT ÖZAL KIZ ANADOLU İMAM HATİP LİSESİ
           </h1>
         </div>
