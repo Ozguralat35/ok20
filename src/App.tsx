@@ -15,6 +15,7 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const voiceModeRef = useRef(false);
+  const isProcessingVoiceRef = useRef(false); // Sesli işlemi takip etmek için
 
   // Speech hooks
   const {
@@ -60,13 +61,22 @@ function App() {
   const handleVoiceConversation = async (spokenText: string) => {
     console.log('🎙️ Voice conversation triggered with:', spokenText);
     
-    if (!spokenText.trim()) {
-      console.log('⚠️ Empty speech, restarting listening');
+    // Çoklu işlemi önle
+    if (isProcessingVoiceRef.current) {
+      console.log('⚠️ Already processing voice input, ignoring');
+      return;
+    }
+    
+    if (!spokenText.trim() || spokenText.length < 3) {
+      console.log('⚠️ Empty or too short speech, restarting listening');
       if (voiceModeRef.current) {
         restartListening(handleVoiceConversation);
       }
       return;
     }
+
+    // İşlem başladığını işaretle
+    isProcessingVoiceRef.current = true;
 
     // Reset transcript after using it
     resetTranscript();
@@ -103,6 +113,8 @@ function App() {
       if (data.textResponse && voiceModeRef.current) {
         console.log('🔊 Speaking response and then restarting listening');
         speak(data.textResponse, () => {
+          // İşlem tamamlandığını işaretle
+          isProcessingVoiceRef.current = false;
           // Restart listening after speech ends
           if (voiceModeRef.current) {
             console.log('🔄 Restarting listening after speech');
@@ -111,7 +123,10 @@ function App() {
         });
       } else if (voiceModeRef.current) {
         // No response, restart listening directly
+        isProcessingVoiceRef.current = false;
         restartListening(handleVoiceConversation);
+      } else {
+        isProcessingVoiceRef.current = false;
       }
       
     } catch (error) {
@@ -128,6 +143,9 @@ function App() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, botMessage]);
+
+      // İşlem tamamlandığını işaretle
+      isProcessingVoiceRef.current = false;
 
       // Continue voice mode even on error
       if (voiceModeRef.current) {
@@ -174,6 +192,7 @@ function App() {
     setMessages([]);
     setIsVoiceMode(false);
     voiceModeRef.current = false;
+    isProcessingVoiceRef.current = false;
     stopSpeaking();
     stopListening();
     resetTranscript();
@@ -257,6 +276,7 @@ function App() {
       console.log('⏹️ Stopping voice mode');
       setIsVoiceMode(false);
       voiceModeRef.current = false;
+      isProcessingVoiceRef.current = false;
       stopListening();
       stopSpeaking();
     } else {
@@ -264,6 +284,7 @@ function App() {
       console.log('▶️ Starting voice mode');
       setIsVoiceMode(true);
       voiceModeRef.current = true;
+      isProcessingVoiceRef.current = false;
       resetTranscript();
       startListening(handleVoiceConversation);
     }
@@ -332,7 +353,7 @@ function App() {
                 <img 
                   src="/dinle.gif" 
                   alt="Dinleniyor" 
-                  className="w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 object-cover rounded-full shadow-2xl"
+                  className="w-72 h-72 sm:w-90 sm:h-90 md:w-108 md:h-108 lg:w-126 lg:h-126 object-cover rounded-full shadow-2xl"
                 />
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-700 mt-6">
                   🎤 Dinleniyor...
@@ -353,7 +374,7 @@ function App() {
                 <img 
                   src="/konus.gif" 
                   alt="Konuşuyor" 
-                  className="w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 object-cover rounded-full shadow-2xl"
+                  className="w-72 h-72 sm:w-90 sm:h-90 md:w-108 md:h-108 lg:w-126 lg:h-126 object-cover rounded-full shadow-2xl"
                 />
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-700 mt-6">
                   🔊 Konuşuyor...
@@ -366,8 +387,8 @@ function App() {
             
             {!isListening && !isSpeaking && !isLoading && (
               <div className="mb-6 flex flex-col items-center">
-                <div className="w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-2xl">
-                  <Mic className="w-18 h-18 sm:w-24 sm:h-24 lg:w-30 lg:h-30 text-gray-400" />
+                <div className="w-72 h-72 sm:w-90 sm:h-90 md:w-108 md:h-108 lg:w-126 lg:h-126 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-2xl">
+                  <Mic className="w-24 h-24 sm:w-30 sm:h-30 lg:w-36 lg:h-36 text-gray-400" />
                 </div>
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-600 mt-6">
                   ⏳ Hazır...
@@ -380,11 +401,11 @@ function App() {
 
             {isLoading && (
               <div className="mb-6 flex flex-col items-center">
-                <div className="w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-84 lg:h-84 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-2xl">
+                <div className="w-72 h-72 sm:w-90 sm:h-90 md:w-108 md:h-108 lg:w-126 lg:h-126 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-2xl">
                   <div className="flex space-x-2">
-                    <div className="w-4 h-4 sm:w-6 sm:h-6 bg-blue-500 rounded-full animate-bounce"></div>
-                    <div className="w-4 h-4 sm:w-6 sm:h-6 bg-blue-500 rounded-full animate-bounce delay-150"></div>
-                    <div className="w-4 h-4 sm:w-6 sm:h-6 bg-blue-500 rounded-full animate-bounce delay-300"></div>
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-full animate-bounce"></div>
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-full animate-bounce delay-150"></div>
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-full animate-bounce delay-300"></div>
                   </div>
                 </div>
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mt-6">

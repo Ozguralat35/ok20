@@ -39,6 +39,8 @@ export const useSpeechRecognition = () => {
   const finalTranscriptRef = useRef('');
   const isVoiceModeRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isProcessingRef = useRef(false); // Çoklu işlemi önlemek için
+  const lastProcessedTextRef = useRef(''); // Son işlenen metni takip etmek için
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -58,6 +60,7 @@ export const useSpeechRecognition = () => {
       recognitionRef.current = null;
     }
     setIsListening(false);
+    isProcessingRef.current = false;
   }, []);
 
   const checkMicrophonePermission = async (): Promise<boolean> => {
@@ -102,6 +105,8 @@ export const useSpeechRecognition = () => {
     isVoiceModeRef.current = !!onSpeechEnd;
     onSpeechEndRef.current = onSpeechEnd || null;
     finalTranscriptRef.current = '';
+    isProcessingRef.current = false;
+    lastProcessedTextRef.current = '';
 
     // Create new recognition instance
     const recognition = new SpeechRecognition();
@@ -140,11 +145,16 @@ export const useSpeechRecognition = () => {
       setTranscript(currentTranscript);
 
       // For voice mode, process final results immediately
-      if (finalTranscript && isVoiceModeRef.current && onSpeechEndRef.current) {
-        console.log('🎯 Final result for voice mode:', finalTranscriptRef.current);
+      if (finalTranscript && isVoiceModeRef.current && onSpeechEndRef.current && !isProcessingRef.current) {
         const fullText = finalTranscriptRef.current.trim();
-        if (fullText) {
+        console.log('🎯 Final result for voice mode:', fullText);
+        
+        // Aynı metni tekrar işlememek için kontrol et
+        if (fullText && fullText !== lastProcessedTextRef.current && fullText.length > 2) {
+          isProcessingRef.current = true;
+          lastProcessedTextRef.current = fullText;
           recognition.stop();
+          
           // Process the speech immediately
           const callback = onSpeechEndRef.current;
           setTimeout(() => {
@@ -180,6 +190,7 @@ export const useSpeechRecognition = () => {
       }
       setIsListening(false);
       recognitionRef.current = null;
+      isProcessingRef.current = false;
     };
 
     try {
@@ -188,6 +199,7 @@ export const useSpeechRecognition = () => {
       console.error('❌ Error starting recognition:', error);
       setIsListening(false);
       recognitionRef.current = null;
+      isProcessingRef.current = false;
     }
   }, [isSupported, cleanup]);
 
@@ -195,6 +207,8 @@ export const useSpeechRecognition = () => {
     console.log('⏹️ Stopping speech recognition');
     isVoiceModeRef.current = false;
     onSpeechEndRef.current = null;
+    isProcessingRef.current = false;
+    lastProcessedTextRef.current = '';
     cleanup();
   }, [cleanup]);
 
@@ -202,6 +216,8 @@ export const useSpeechRecognition = () => {
     console.log('🔄 Resetting transcript');
     setTranscript('');
     finalTranscriptRef.current = '';
+    lastProcessedTextRef.current = '';
+    isProcessingRef.current = false;
   }, []);
 
   // Function specifically for voice mode to restart listening
@@ -213,12 +229,15 @@ export const useSpeechRecognition = () => {
       clearTimeout(timeoutRef.current);
     }
     
+    // Reset processing flags
+    isProcessingRef.current = false;
+    
     // Set a timeout to restart listening
     timeoutRef.current = setTimeout(() => {
       if (isVoiceModeRef.current) {
         startListening(onSpeechEnd);
       }
-    }, 1000);
+    }, 1500); // Biraz daha uzun bekleme süresi
   }, [startListening]);
 
   return {
