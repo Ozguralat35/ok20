@@ -451,7 +451,7 @@ function App() {
           }}
         >
           <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg tracking-wider">
-            TURGUT ÖZAL KAİHL
+            TURGUT ÖZAL KIZ ANADOLU İMAM HATİP LİSESİ
           </h1>
         </div>
       </div>
