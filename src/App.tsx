@@ -317,7 +317,7 @@ function App() {
         {/* Header */}
         <div className="w-full relative h-[10vh] min-h-[80px] max-h-[100px]">
           <img
-            src="/header.jpg"
+            src="/public/header.jpg"
             className="w-full h-full object-cover"
             alt="Header"
           />
