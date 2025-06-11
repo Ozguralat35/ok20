@@ -61,7 +61,12 @@ export const useSpeechSynthesis = () => {
     };
 
     utterance.onerror = (event) => {
-      console.error('Speech synthesis error:', event.error);
+      // Differentiate between genuine errors and normal interruption
+      if (event.error === 'interrupted') {
+        console.info('Speech synthesis interrupted (normal behavior)');
+      } else {
+        console.error('Speech synthesis error:', event.error);
+      }
       setIsSpeaking(false);
       // Call the callback even on error
       if (onEndCallbackRef.current) {
