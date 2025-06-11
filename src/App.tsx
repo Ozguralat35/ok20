@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
-import { Bot, Send, Image as ImageIcon, Mic, MicOff, Volume2, VolumeX, RotateCcw, X } from 'lucide-react';
+import { Bot, Send, Image as ImageIcon, Mic, MicOff, Volume2, VolumeX, RotateCcw, X, AlertCircle } from 'lucide-react';
 import { ChatMessage, ChatAttachment, Source } from './types';
 import { sendChatMessage, ChatApiError } from './api';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
@@ -12,10 +12,11 @@ function App() {
   const [attachment, setAttachment] = useState<ChatAttachment | null>(null);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [apiKeyError, setApiKeyError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const voiceModeRef = useRef(false);
-  const isProcessingVoiceRef = useRef(false); // Sesli işlemi takip etmek için
+  const isProcessingVoiceRef = useRef(false);
 
   // Speech hooks
   const {
@@ -48,6 +49,14 @@ function App() {
     voiceModeRef.current = isVoiceMode;
   }, [isVoiceMode]);
 
+  // Check API key on component mount
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_API_KEY;
+    if (!apiKey || apiKey === 'your-api-key-here') {
+      setApiKeyError(true);
+    }
+  }, []);
+
   // Manual microphone: write transcript to input when listening stops
   useEffect(() => {
     if (transcript && !isVoiceMode && !isListening) {
@@ -61,7 +70,6 @@ function App() {
   const handleVoiceConversation = async (spokenText: string) => {
     console.log('🎙️ Voice conversation triggered with:', spokenText);
     
-    // Çoklu işlemi önle
     if (isProcessingVoiceRef.current) {
       console.log('⚠️ Already processing voice input, ignoring');
       return;
@@ -75,13 +83,9 @@ function App() {
       return;
     }
 
-    // İşlem başladığını işaretle
     isProcessingVoiceRef.current = true;
-
-    // Reset transcript after using it
     resetTranscript();
 
-    // Add user message
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'user',
@@ -105,24 +109,21 @@ function App() {
         type: 'bot',
         message: data.textResponse,
         timestamp: new Date(),
+        sources: data.sources
       };
 
       setMessages(prev => [...prev, botMessage]);
 
-      // Speak response and restart listening when done
       if (data.textResponse && voiceModeRef.current) {
         console.log('🔊 Speaking response and then restarting listening');
         speak(data.textResponse, () => {
-          // İşlem tamamlandığını işaretle
           isProcessingVoiceRef.current = false;
-          // Restart listening after speech ends
           if (voiceModeRef.current) {
             console.log('🔄 Restarting listening after speech');
             restartListening(handleVoiceConversation);
           }
         });
       } else if (voiceModeRef.current) {
-        // No response, restart listening directly
         isProcessingVoiceRef.current = false;
         restartListening(handleVoiceConversation);
       } else {
@@ -144,10 +145,8 @@ function App() {
       };
       setMessages(prev => [...prev, botMessage]);
 
-      // İşlem tamamlandığını işaretle
       isProcessingVoiceRef.current = false;
 
-      // Continue voice mode even on error
       if (voiceModeRef.current) {
         setTimeout(() => {
           if (voiceModeRef.current) {
@@ -238,11 +237,11 @@ function App() {
         type: 'bot',
         message: data.textResponse,
         timestamp: new Date(),
+        sources: data.sources
       };
 
       setMessages(prev => [...prev, botMessage]);
 
-      // Auto-speak if enabled
       if (autoSpeak && data.textResponse) {
         setTimeout(() => {
           speak(data.textResponse);
@@ -272,7 +271,6 @@ function App() {
     console.log('🎛️ Voice toggle clicked, current mode:', isVoiceMode);
     
     if (isVoiceMode) {
-      // Stop voice mode
       console.log('⏹️ Stopping voice mode');
       setIsVoiceMode(false);
       voiceModeRef.current = false;
@@ -280,7 +278,6 @@ function App() {
       stopListening();
       stopSpeaking();
     } else {
-      // Start voice mode
       console.log('▶️ Starting voice mode');
       setIsVoiceMode(true);
       voiceModeRef.current = true;
@@ -304,11 +301,60 @@ function App() {
     if (isListening) {
       stopListening();
     } else {
-      // Normal microphone usage (not voice mode)
       resetTranscript();
-      startListening(); // No callback = manual mode
+      startListening();
     }
   };
+
+  // API Key Error Component
+  if (apiKeyError) {
+    return (
+      <div className="flex flex-col h-screen bg-gray-50">
+        {/* Header */}
+        <div className="w-full relative h-[10vh] min-h-[80px] max-h-[100px]">
+          <img
+            src="/header.jpg"
+            className="w-full h-full object-cover"
+            alt="Header"
+          />
+          <div 
+            className="absolute inset-0 flex items-center justify-center px-2"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(0, 51, 102, 0.85), rgba(0, 102, 204, 0.75))'
+            }}
+          >
+            <h1 className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white drop-shadow-lg tracking-wider text-center leading-tight">
+              TURGUT ÖZAL KIZ ANADOLU İMAM HATİP LİSESİ
+            </h1>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl border border-red-200 p-6">
+            <div className="text-center">
+              <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+              <h2 className="text-xl font-bold text-red-700 mb-4">API Anahtarı Gerekli</h2>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Uygulamanın çalışması için API anahtarı gereklidir. 
+                Lütfen <code className="bg-gray-100 px-2 py-1 rounded text-sm">.env</code> dosyasında 
+                <code className="bg-gray-100 px-2 py-1 rounded text-sm ml-1">VITE_API_KEY</code> değerini ayarlayın.
+              </p>
+              <div className="bg-gray-50 p-4 rounded-lg text-left">
+                <p className="text-sm text-gray-700 font-medium mb-2">Örnek .env dosyası:</p>
+                <code className="text-xs text-gray-600 block">
+                  VITE_API_KEY=your-actual-api-key-here
+                </code>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">
+                API anahtarını ayarladıktan sonra sayfayı yenileyin.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Voice Mode Full Screen Component
   if (isVoiceMode) {
@@ -579,6 +625,16 @@ function App() {
                         alt={msg.attachment.name}
                         className="max-w-full rounded-lg"
                       />
+                    </div>
+                  )}
+                  {msg.sources && msg.sources.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-500 mb-2">Kaynaklar:</p>
+                      {msg.sources.map((source, index) => (
+                        <div key={index} className="text-xs text-gray-600 mb-1">
+                          <span className="font-medium">{source.title}</span>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <span className="text-xs opacity-75 mt-2 block">

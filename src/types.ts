@@ -4,6 +4,7 @@ export interface ChatMessage {
   message: string;
   timestamp: Date;
   attachment?: ChatAttachment;
+  sources?: Source[];
 }
 
 export interface ChatAttachment {
@@ -16,10 +17,7 @@ export interface ApiResponse {
   id: string;
   type: 'abort' | 'textResponse';
   textResponse: string;
-  sources: {
-    title: string;
-    chunk: string;
-  }[];
+  sources: Source[];
   close: boolean;
   error: string | null;
 }
